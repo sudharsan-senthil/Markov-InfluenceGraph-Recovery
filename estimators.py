@@ -2,8 +2,8 @@ from collections import Counter
 import math
 
 def P_estimator(S): # where S is a 3d array, containing samples from T time instances, and every instance contains N*M binary samples
-    T, N = len(S), len(S[0])
-    S1 = [] # contains elements from the samplespace
+    T, N, M = len(S), len(S[0]), len(S[0][0])
+    S1 = []
     for t in range(T):
         S1.append([])
         for v in range(N):
@@ -15,7 +15,7 @@ def P_estimator(S): # where S is a 3d array, containing samples from T time inst
         counts = Counter(S2[v])
         P_V.append({key: value/T for key, value in counts.items()})
 
-    return P_V
+    return P_V        
 
 def P_v_plus_Q(v_plus, Q, S): # v_plus-> node-v value @ (t+1), Q is a subset of nodes [include node-v here if required]
     T, N = len(S), len(S[0])
@@ -32,9 +32,9 @@ def P_v_plus_Q(v_plus, Q, S): # v_plus-> node-v value @ (t+1), Q is a subset of 
     counts = Counter(S2)
     P = {key: value/T for key, value in counts.items()} # P([V(t+1),Q(t)])
 
-    return P      
+    return P                
 
-def P_Q(Q, S): # Q includes v
+def P_Q(Q, S):
     T, N = len(S), len(S[0])
     S1 = []
     for t in range(T):
@@ -53,13 +53,6 @@ def P_Q(Q, S): # Q includes v
 
 def H(prob_dist):
     return -sum(p * math.log2(p) for p in prob_dist if p > 0)
-
-def H_v_plus_C_Q(v_plus, Q, S): # Q includes v
-    Pr_v_plus_Q = P_v_plus_Q(v_plus, Q, S).values()
-    Pr_Q = P_Q(Q, S).values()
-    
-    return H(Pr_v_plus_Q) - H(Pr_Q) 
-
 
 def P_Q_past(Q, D, S): # D is a list of time stamps. for coin-toss model D = [0,d]. P({Q(t),Q(t-d)})
     T, N = len(S), len(S[0])
@@ -101,10 +94,14 @@ def P_v_plus_Q_past(v_plus, Q, D, S):
 
     return P
 
+def H_v_plus_C_Q(v_plus, Q, S): # Q includes v
+    Pr_v_plus_Q = P_v_plus_Q(v_plus, Q, S).values()
+    Pr_Q = P_Q(Q, S).values()
+    
+    return H(Pr_v_plus_Q) - H(Pr_Q) 
 
-
-def H_v_plus_C_Q_past(v_plus, Q, d, S): # H(v+ |{Q(t),Q(t-d)})
-    Pr_v_plus_Q_past = P_v_plus_Q_past(v_plus, Q, S).values()
-    Pr_Q_past = P_Q_past(Q, S).values()
+def H_v_plus_C_Q_past(v_plus, Q, D, S): # H(v+ |{Q(t),Q(t-d)})
+    Pr_v_plus_Q_past = P_v_plus_Q_past(v_plus, Q, D, S).values()
+    Pr_Q_past = P_Q_past(Q, D, S).values()
     
     return H(Pr_v_plus_Q_past) - H(Pr_Q_past)
